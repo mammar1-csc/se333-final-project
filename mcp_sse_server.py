@@ -7,7 +7,7 @@ from starlette.responses import EventSourceResponse
 
 app = FastAPI()
 
-# Each connected client gets an asyncio.Queue to receive messages
+
 clients: List[asyncio.Queue] = []
 
 
@@ -28,14 +28,14 @@ async def sse_endpoint(request: Request):
     async def generator():
         try:
             while True:
-                # If the client disconnects, stop
+                
                 if await request.is_disconnected():
                     break
                 try:
                     data = await asyncio.wait_for(q.get(), timeout=15.0)
                     yield f"data: {data}\n\n"
                 except asyncio.TimeoutError:
-                    # send a ping comment to keep connection alive
+                    
                     yield ": ping\n\n"
         finally:
             try:
@@ -54,10 +54,10 @@ async def publish(request: Request):
     except Exception:
         return JSONResponse({"error": "invalid json"}, status_code=400)
 
-    # Broadcast the JSON string to all clients
+    
     text = str(payload)
     for q in list(clients):
-        # use put_nowait to avoid blocking
+        
         try:
             q.put_nowait(text)
         except Exception:
